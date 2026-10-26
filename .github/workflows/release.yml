@@ -1,0 +1,20 @@
+name: release
+on:
+  push:
+    tags: ["v*"]
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: python tests/test_filters.py
+      - run: python tests/test_engine.py
+      - run: ./build.bat
+        shell: cmd
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: installer_out/*-Setup.exe
