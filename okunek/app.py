@@ -24,7 +24,7 @@ from .assets import ICON, LOGO
 from .config import (APP, APP_NAME, COV, EXTS, F, FB, FH, FI, FIL, FS, SANS, SOURCES, THEMES, UNKNOWN, UPDATE_REPO, VERSION)
 from .net import Deezer, fetch_lyrics, http_get, lastfm_stats, parse_lrc
 from .store import Store
-from .util import fmt, human_num, mix, safe_name, trunc
+from .util import dbg, fmt, human_num, mix, safe_name, trunc
 from .widgets import AButton, ArtistStrip, CardGrid, PillEntry, Slider, TrackList
 
 try:
@@ -152,7 +152,7 @@ class App(tk.Tk):
 
     def log(self):
         tb = traceback.format_exc()
-        print(tb)
+        dbg(tb)
         try:
             os.makedirs(APP, exist_ok=True)
             with open(os.path.join(APP, "log.txt"), "a", encoding="utf-8") as f:
@@ -202,7 +202,7 @@ class App(tk.Tk):
                     if u:
                         self.post(lambda: self.offer_update(u))
                 except Exception as ex:  # noqa: BLE001
-                    print("update check:", ex)
+                    dbg("update check:", ex)
         POOL.submit(work)
 
     def offer_update(self, u):
@@ -1038,7 +1038,7 @@ class App(tk.Tk):
                     self.scache[key] = (time.time(), ts)
             except Exception as ex:  # noqa: BLE001
                 ts = []
-                print("search:", ex)
+                dbg("search:", ex)
                 self.post(lambda ex=ex: self.status("Ошибка поиска: " + str(ex)[:70]))
             self.post(lambda: self.ingest(tok, [dict(t) for t in ts], unc, orig, lib))
 
@@ -1048,7 +1048,7 @@ class App(tk.Tk):
                 qt = set(flt.norm(artists).split())
                 r = [a for a in r if set(flt.norm(a["name"]).split()) & qt]
             except Exception as ex:  # noqa: BLE001
-                print("artists:", ex)
+                dbg("artists:", ex)
                 r = []
             self.post(lambda: self.set_strip(tok, r))
         for j in jobs:
@@ -1144,7 +1144,7 @@ class App(tk.Tk):
                             continue
                         out += [t for t in self.dz.top(rel["id"], 5) if flt.is_original(t["tags"]) and flt.track_key(t["artist"], t["title"]) not in have]
             except Exception as ex:  # noqa: BLE001
-                print("discover:", ex)
+                dbg("discover:", ex)
             random.shuffle(out)
             self.post(lambda: self.ingest_discover(tok, out))
         POOL.submit(work)
@@ -1210,7 +1210,7 @@ class App(tk.Tk):
                 st["avg"] = engine.avg_views(a["top"])
                 self.post(lambda: live() and self.hero_draw())
             except Exception as ex:  # noqa: BLE001
-                print("artist:", ex)
+                dbg("artist:", ex)
                 a["loaded"] = True
                 if a["albums"] is None:
                     a["albums"] = []
@@ -1236,7 +1236,7 @@ class App(tk.Tk):
                     prog = lambda d, n: (a.__setitem__("progress", f"Собираю дискографию… {d}/{n}"), self.post(lambda: self.artist is a and a["tab"] == "all" and self.render(True)))  # noqa: E731
                     a["all"] = self.dz.all_tracks(a["id"], a["albums"], prog)
                 except Exception as ex:  # noqa: BLE001
-                    print("all:", ex)
+                    dbg("all:", ex)
                     a["all"] = []
                 self.post(lambda: self.artist is a and self.render(True))
             POOL.submit(work)
@@ -1267,7 +1267,7 @@ class App(tk.Tk):
                     pass
                 al["tracks"] = ts
             except Exception as ex:  # noqa: BLE001
-                print("album:", ex)
+                dbg("album:", ex)
                 self.post(lambda: self.status("Не удалось загрузить альбом"))
             self.post(lambda: self.album is al and self.render(True))
         POOL.submit(work)
@@ -1365,7 +1365,7 @@ class App(tk.Tk):
                 url, hd = engine.resolve(t, lambda: tok == self.tok)
                 self.post(lambda: self.start(t, url, tok, hd))
             except Exception as ex:  # noqa: BLE001
-                print("Ошибка:", ex)
+                dbg("Ошибка:", ex)
                 self.post(lambda ex=ex: self.retry_or_fail(str(ex), tok))
         POOL.submit(work)
 
@@ -1388,7 +1388,7 @@ class App(tk.Tk):
                 f = engine.cache_file(t)
                 self.post(lambda: self.start(t, f, tok))
             except Exception as ex:  # noqa: BLE001
-                print("cache:", ex)
+                dbg("cache:", ex)
                 self.post(lambda ex=ex: self.fail(str(ex), tok))
         POOL.submit(work)
 

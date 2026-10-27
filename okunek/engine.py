@@ -13,6 +13,7 @@ import zipfile
 
 from . import filters as flt
 from .config import APP, BIN, CACHE, ART, BASE, ENGINE, EXE_DIR, FROZEN, LIB, UA, VLCDIR
+from .util import dbg
 from .net import cache_get, cache_put, http_get, http_json
 
 yt_dlp = None
@@ -145,7 +146,7 @@ def update_ytdlp(force=False, log=print):
         STREAM_CACHE.clear()
         return "new"
     except Exception as ex:  # noqa: BLE001
-        print("update_ytdlp:", ex)
+        dbg("update_ytdlp:", ex)
         return "fail"
 
 
@@ -169,7 +170,7 @@ def ensure_deno(log=print):
         setup_paths()
         return True
     except Exception as ex:  # noqa: BLE001
-        print("deno:", ex)
+        dbg("deno:", ex)
         return False
 
 
@@ -266,7 +267,7 @@ def ytm_search(q, n):
         if r:
             return r
     except Exception as ex:  # noqa: BLE001
-        print("ytm:", str(ex)[:120])
+        dbg("ytm:", str(ex)[:120])
     return flat_search("ytsearch", q + " topic", n)
 
 
@@ -321,7 +322,7 @@ def _stream(page, alive):
                 return url, hd
         except Exception as ex:  # noqa: BLE001
             last = ex
-            print("stream:", str(ex)[:160])
+            dbg("stream:", str(ex)[:160])
     raise last or RuntimeError("не удалось получить ссылку на звук")
 
 
@@ -337,7 +338,7 @@ def match_catalog(t):
         try:
             b = flt.best_candidate(flat_search(prov, q, n), t["artist"], t["title"], t.get("dur"))
         except Exception as ex:  # noqa: BLE001
-            print("match:", str(ex)[:100])
+            dbg("match:", str(ex)[:100])
             continue
         if b:
             best = dict(url=b.get("url") or b.get("webpage_url"), views=b.get("view_count") or 0, dur=b.get("duration") or 0)
@@ -360,7 +361,7 @@ def resolve(t, alive=lambda: True):
     except Exception as ex:  # noqa: BLE001
         if not alive():
             raise
-        print("запасной источник:", str(ex)[:100])
+        dbg("запасной источник:", str(ex)[:100])
         # основной источник не отдал звук — ищем ту же песню на других площадках
         q = f"{flt.primary_artist(t['artist'])} {t['title']}"
         for prov, n in (("scsearch", 5), ("ytsearch", 6)):

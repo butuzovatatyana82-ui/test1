@@ -55,3 +55,11 @@ def human_num(n):
 
 def safe_name(s, n=150):
     return re.sub(r'[\\/:*?"<>|]', "", s).strip()[:n]
+
+
+def dbg(*a):
+    """print, который не падает на консолях без поддержки кириллицы (cp1252 и т. п.)."""
+    try:
+        print(*a)
+    except Exception:  # noqa: BLE001
+        pass
