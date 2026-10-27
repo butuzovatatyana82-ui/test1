@@ -10,6 +10,11 @@ if sys.stdout is None:
     sys.stdout = open(os.devnull, "w")
 if sys.stderr is None:
     sys.stderr = open(os.devnull, "w")
+for _s in (sys.stdout, sys.stderr):  # консоль Windows может быть не-UTF-8 — не падать на русском тексте
+    try:
+        _s.reconfigure(errors="replace")
+    except Exception:  # noqa: BLE001
+        pass
 
 from okunek import engine  # noqa: E402
 from okunek.config import APP, APP_NAME, FROZEN, VERSION  # noqa: E402
